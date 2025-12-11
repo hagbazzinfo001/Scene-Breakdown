@@ -5,7 +5,10 @@ import { Button } from "@/components/ui/button"
 import { useRouter } from "next/navigation"
 import { useEffect, useState } from "react"
 import { createClient } from "@/lib/client"
-
+import resulticon from "@/public/result.jpg"
+import Image from "next/image"
+import  Analysis from "@/public/analysis.webp"
+import history from "@/public/history-svgrepo-com.svg"
 export default function Home() {
   const router = useRouter()
   const [isAuthenticated, setIsAuthenticated] = useState(false)
@@ -77,17 +80,23 @@ export default function Home() {
 
           <div className="grid md:grid-cols-3 gap-8 mt-16 pt-8">
             <div className="space-y-4">
-              <div className="text-4xl">✨</div>
+              <div className="text-4xl bg-white rounded-full p-2 w-fit mx-auto">
+                <Image src={Analysis} alt="Analysis Icon" width={80} height={80} />
+              </div>
               <h3 className="font-semibold text-lg">Intelligent Analysis</h3>
               <p className="text-sm text-muted-foreground">Powered by  Groq for comprehensive scene understanding</p>
             </div>
             <div className="space-y-4">
-              <div className="text-4xl">⚡</div>
+              <div className="text-4xl bg-white rounded-full p-2 w-fit mx-auto">
+              <Image src={resulticon} alt="Results Icon" width={80} height={80} />
+              </div>
               <h3 className="font-semibold text-lg">Instant Results</h3>
               <p className="text-sm text-muted-foreground">Get detailed breakdowns in seconds, not hours</p>
             </div>
-            <div className="space-y-4">
-              <div className="text-4xl">📚</div>
+            <div className="space-y-4 justify-center">
+              <div className="text-4xl bg-white rounded-full p-2 w-fit mx-auto">
+                <Image src={history} alt="History Icon" width={80} height={80} />
+              </div>
               <h3 className="font-semibold text-lg">Full History</h3>
               <p className="text-sm text-muted-foreground">Save and access all your previous breakdowns</p>
             </div>
@@ -97,3 +106,4 @@ export default function Home() {
     </main>
   )
 }
+ 

@@ -87,9 +87,9 @@ export default function HistoryPage() {
       <header className="border-b border-border/40 backdrop-blur-sm sticky top-0">
         <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
           <Link href="/">
-            <h1 className="text-2xl font-bold text-primary hover:opacity-80 transition">SceneBreak </h1>
+            <h1 className="text-1xl font-bold text-primary hover:opacity-80 transition">SceneBreak </h1>
           </Link>
-          <div className="flex gap-4">
+          <div className="flex gap-2">
             <Button asChild>
               <Link href="/protected/breakdown">Break Down Scene</Link>
             </Button>

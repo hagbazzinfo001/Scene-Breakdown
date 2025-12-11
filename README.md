@@ -1,18 +1,17 @@
-# SceneBreak AI - AI-Powered Scene Breakdown Tool
+# SceneBreak- AI-Powered Scene Breakdown Tool
 
 A modern web application that uses artificial intelligence to analyze film and theater scenes, extracting characters, themes, locations, and deeper insights instantly.
 
-![SceneBreak AI](./public/og-image.png)
-
+ 
 ## Overview
 
-SceneBreak AI is designed for screenwriters, filmmakers, directors, and drama enthusiasts who need to quickly analyze and understand screenplay scenes. Instead of manually breaking down scenes, which can be time-consuming and subjective, SceneBreak AI leverages GPT-4 AI to provide comprehensive, structured analysis in seconds.
+SceneBreak AI is designed for screenwriters, filmmakers, directors, and drama enthusiasts who need to quickly analyze and understand screenplay scenes. Instead of manually breaking down scenes, which can be time-consuming and subjective, SceneBreak AI leverages Groq AI to provide comprehensive, structured analysis in seconds.
 
 ## Features
 
 ### Core Functionality
 
-- **AI-Powered Scene Analysis**: Powered by GPT-4, the app analyzes screenplay scenes and extracts:
+- **AI-Powered Scene Analysis**: Powered by Groq, the app analyzes screenplay scenes and extracts:
   - Characters and their roles
   - Locations and settings
   - Central themes
@@ -64,7 +63,7 @@ SceneBreak AI is designed for screenwriters, filmmakers, directors, and drama en
 
 ## Project Structure
 
-\`\`\`
+```
 scenebreak-ai/
 ├── app/
 │   ├── layout.tsx                 # Root layout with theme provider
@@ -103,7 +102,7 @@ scenebreak-ai/
 ├── tsconfig.json                 # TypeScript configuration
 └── package.json                  # Dependencies
 
-\`\`\`
+```
 
 ## Getting Started
 
@@ -418,7 +417,7 @@ For issues, questions, or suggestions:
 
 ---
 
-**SceneBreak AI** - Empowering screenwriters and filmmakers with AI-powered insights.
+**SceneBreak ** - Empowering screenwriters and filmmakers with AI-powered insights.
 
  ## Author: Owolabi Agbabiaka
 Last Updated: December 2025

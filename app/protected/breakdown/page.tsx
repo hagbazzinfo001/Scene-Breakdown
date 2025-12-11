@@ -1,13 +1,15 @@
+
+
 "use client"
 
 import type React from "react"
 
-import { createClient } from "@/lib/client"
+ import { createClient } from "@/lib/client"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { useRouter } from "next/navigation"
+import { useRouter, useSearchParams } from "next/navigation"
 import { useEffect, useState } from "react"
 import { Textarea } from "@/components/ui/textarea"
 import Link from "next/link"
@@ -32,7 +34,11 @@ export default function BreakdownPage() {
   const [breakdown, setBreakdown] = useState<BreakdownResult | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [user, setUser] = useState<any>(null)
+  const [isLoadingScene, setIsLoadingScene] = useState(false)
+  const [editSceneId, setEditSceneId] = useState<string | null>(null)
   const router = useRouter()
+  const searchParams = useSearchParams()
+  const sceneId = searchParams.get("sceneId")
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -42,11 +48,73 @@ export default function BreakdownPage() {
         router.push("/auth/login")
       } else {
         setUser(data.user)
+
+        if (sceneId) {
+          await loadScene(sceneId)
+        }
       }
     }
 
     checkAuth()
-  }, [router])
+  }, [router, sceneId])
+
+  const loadScene = async (id: string) => {
+    setIsLoadingScene(true)
+    const supabase = createClient()
+
+    try {
+      const { data, error } = await supabase
+        .from("scenes")
+        .select(
+          `
+          id,
+          title,
+          description,
+          scene_text,
+          breakdowns (
+            characters,
+            locations,
+            themes,
+            tone,
+            structure,
+            technical_notes,
+            visual_elements,
+            emotional_arc
+          )
+        `,
+        )
+        .eq("id", id)
+        .single()
+
+      if (error) throw error
+
+      if (data) {
+        setTitle(data.title)
+        setDescription(data.description)
+        setSceneText(data.scene_text)
+        setEditSceneId(data.id)
+
+        if (data.breakdowns && data.breakdowns.length > 0) {
+          const bd = data.breakdowns[0]
+          setBreakdown({
+            characters: bd.characters || [],
+            locations: bd.locations || [],
+            themes: bd.themes || [],
+            tone: bd.tone || "",
+            structure: bd.structure || "",
+            technicalNotes: bd.technical_notes || "",
+            visualElements: bd.visual_elements || "",
+            emotionalArc: bd.emotional_arc || "",
+          })
+        }
+      }
+    } catch (err) {
+      console.error("[v0] Error loading scene:", err)
+      setError("Failed to load scene")
+    } finally {
+      setIsLoadingScene(false)
+    }
+  }
 
   const handleAnalyze = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -62,13 +130,18 @@ export default function BreakdownPage() {
       })
 
       if (!response.ok) {
-        throw new Error("Failed to analyze scene")
+        const errorData = await response.json().catch(() => ({}))
+        const errorMessage = errorData.error || `Server error: ${response.status}`
+        console.error("[v0] API error:", errorData)
+        throw new Error(errorMessage)
       }
 
       const data = await response.json()
       setBreakdown(data)
     } catch (err) {
-      setError(err instanceof Error ? err.message : "An error occurred")
+      const message = err instanceof Error ? err.message : "An error occurred"
+      setError(message)
+      console.error("[v0] Analysis error:", message)
     } finally {
       setIsLoading(false)
     }
@@ -81,7 +154,8 @@ export default function BreakdownPage() {
     const supabase = createClient()
 
     try {
-      // Insert scene
+      console.log("[v0] Starting save with user_id:", user.id)
+
       const { data: sceneData, error: sceneError } = await supabase
         .from("scenes")
         .insert({
@@ -93,9 +167,13 @@ export default function BreakdownPage() {
         .select()
         .single()
 
-      if (sceneError) throw sceneError
+      if (sceneError) {
+        console.error("[v0] Scene insert error:", sceneError)
+        throw sceneError
+      }
 
-      // Insert breakdown
+      console.log("[v0] Scene created with ID:", sceneData?.id)
+
       const { error: breakdownError } = await supabase.from("breakdowns").insert({
         scene_id: sceneData.id,
         user_id: user.id,
@@ -109,11 +187,17 @@ export default function BreakdownPage() {
         emotional_arc: breakdown.emotionalArc,
       })
 
-      if (breakdownError) throw breakdownError
+      if (breakdownError) {
+        console.error("[v0] Breakdown insert error:", breakdownError)
+        throw breakdownError
+      }
 
+      console.log("[v0] Breakdown saved successfully")
       router.push("/protected/history")
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to save breakdown")
+      const errorMessage = err instanceof Error ? err.message : "Failed to save breakdown"
+      console.error("[v0] Save error details:", err)
+      setError(errorMessage)
     } finally {
       setIsSaving(false)
     }
@@ -128,7 +212,7 @@ export default function BreakdownPage() {
       <header className="border-b border-border/40 backdrop-blur-sm sticky top-0">
         <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
           <Link href="/">
-            <h1 className="text-2xl font-bold text-primary hover:opacity-80 transition">SceneBreak AI</h1>
+            <h1 className="text-2xl font-bold text-primary hover:opacity-80 transition">SceneBreak</h1>
           </Link>
           <div className="flex gap-4">
             <Button variant="ghost" asChild>
@@ -153,56 +237,83 @@ export default function BreakdownPage() {
           {/* Input Form */}
           <div className="space-y-6">
             <div>
-              <h2 className="text-3xl font-bold mb-2">Analyze a Scene</h2>
-              <p className="text-muted-foreground">Paste your scene text and get instant AI-powered analysis</p>
+              <h2 className="text-3xl font-bold mb-2">{editSceneId ? "View Scene" : "Analyze a Scene"}</h2>
+              <p className="text-muted-foreground">
+                {editSceneId
+                  ? "Viewing your previously analyzed scene"
+                  : "Paste your scene text and get instant AI-powered analysis"}
+              </p>
             </div>
 
-            <form onSubmit={handleAnalyze} className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="title">Scene Title (optional)</Label>
-                <Input
-                  id="title"
-                  placeholder="e.g., Coffee Shop Confrontation"
-                  value={title}
-                  onChange={(e) => setTitle(e.target.value)}
-                />
+            {isLoadingScene ? (
+              <div className="flex items-center justify-center py-12">
+                <p className="text-muted-foreground">Loading scene...</p>
               </div>
+            ) : (
+              <form onSubmit={handleAnalyze} className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="title">Scene Title (optional)</Label>
+                  <Input
+                    id="title"
+                    placeholder="e.g., Coffee Shop Confrontation"
+                    value={title}
+                    onChange={(e) => setTitle(e.target.value)}
+                    disabled={editSceneId ? true : false}
+                  />
+                </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="description">Description (optional)</Label>
-                <Input
-                  id="description"
-                  placeholder="e.g., Act 2, Scene 3"
-                  value={description}
-                  onChange={(e) => setDescription(e.target.value)}
-                />
-              </div>
+                <div className="space-y-2">
+                  <Label htmlFor="description">Description (optional)</Label>
+                  <Input
+                    id="description"
+                    placeholder="e.g., Act 2, Scene 3"
+                    value={description}
+                    onChange={(e) => setDescription(e.target.value)}
+                    disabled={editSceneId ? true : false}
+                  />
+                </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="scene">Scene Text *</Label>
-                <Textarea
-                  id="scene"
-                  placeholder="Paste your scene script or description here..."
-                  value={sceneText}
-                  onChange={(e) => setSceneText(e.target.value)}
-                  className="min-h-96 font-mono text-sm"
-                  required
-                />
-              </div>
+                <div className="space-y-2">
+                  <Label htmlFor="scene">Scene Text *</Label>
+                  <Textarea
+                    id="scene"
+                    placeholder="Paste your scene script or description here..."
+                    value={sceneText}
+                    onChange={(e) => setSceneText(e.target.value)}
+                    className="min-h-60 font-mono text-sm"
+                    required
+                    disabled={editSceneId ? true : false}
+                  />
+                </div>
 
-              {error && <p className="text-sm text-destructive">{error}</p>}
+                {error && <p className="text-sm text-destructive">{error}</p>}
 
-              <div className="flex gap-2 pt-4">
-                <Button type="submit" disabled={isLoading || !sceneText} className="flex-1">
-                  {isLoading ? "Analyzing..." : "Break Down Scene”"}
-                </Button>
-                {breakdown && (
-                  <Button type="button" onClick={handleSave} disabled={isSaving} variant="secondary">
-                    {isSaving ? "Saving..." : "Save"}
-                  </Button>
-                )}
-              </div>
-            </form>
+                <div className="flex gap-2 pt-4">
+                  {!editSceneId && (
+                    <Button type="submit" disabled={isLoading || !sceneText} className="flex-1">
+                      {isLoading ? "Analyzing..." : "Break Down Scene"}
+                    </Button>
+                  )}
+                  {breakdown && !editSceneId && (
+                    <Button type="button" onClick={handleSave} disabled={isSaving} variant="secondary">
+                      {isSaving ? "Saving..." : "Save"}
+                    </Button>
+                  )}
+                  {editSceneId && (
+                    <Button
+                      type="button"
+                      onClick={() => {
+                        router.push("/protected/history")
+                      }}
+                      variant="secondary"
+                      className="flex-1"
+                    >
+                      Back to History
+                    </Button>
+                  )}
+                </div>
+              </form>
+            )}
           </div>
 
           {/* Results */}
@@ -308,7 +419,7 @@ export default function BreakdownPage() {
               <div className="h-full flex items-center justify-center">
                 <div className="text-center space-y-4 text-muted-foreground">
                   <div className="text-6xl">📝</div>
-                  <p>Paste a scene script to get started</p>
+                  <p>{isLoadingScene ? "Loading scene..." : "Paste a scene script to get started"}</p>
                 </div>
               </div>
             )}

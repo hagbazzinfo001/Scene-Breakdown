@@ -30,7 +30,7 @@ export default function Home() {
     <main className="min-h-screen bg-gradient-to-br from-background via-background to-secondary flex flex-col">
       <header className="border-b border-border/40 backdrop-blur-sm">
         <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
-          <h1 className="text-2xl font-bold text-primary">SceneBreak AI</h1>
+          <h1 className="text-2xl font-bold text-primary">SceneBreak</h1>
           <div className="flex gap-4">
             {isAuthenticated ? (
               <>
@@ -79,7 +79,7 @@ export default function Home() {
             <div className="space-y-4">
               <div className="text-4xl">✨</div>
               <h3 className="font-semibold text-lg">Intelligent Analysis</h3>
-              <p className="text-sm text-muted-foreground">Powered by GPT-4 for comprehensive scene understanding</p>
+              <p className="text-sm text-muted-foreground">Powered by  Groq for comprehensive scene understanding</p>
             </div>
             <div className="space-y-4">
               <div className="text-4xl">⚡</div>

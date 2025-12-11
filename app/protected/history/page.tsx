@@ -1,3 +1,7 @@
+
+
+
+
 "use client"
 
 import { createClient } from "@/lib/client"
@@ -83,11 +87,11 @@ export default function HistoryPage() {
       <header className="border-b border-border/40 backdrop-blur-sm sticky top-0">
         <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
           <Link href="/">
-            <h1 className="text-2xl font-bold text-primary hover:opacity-80 transition">SceneBreak AI</h1>
+            <h1 className="text-2xl font-bold text-primary hover:opacity-80 transition">SceneBreak </h1>
           </Link>
           <div className="flex gap-4">
             <Button asChild>
-              <Link href="/protected/breakdown">Analyze Scene</Link>
+              <Link href="/protected/breakdown">Break Down Scene</Link>
             </Button>
             <Button
               variant="ghost"
@@ -133,37 +137,53 @@ export default function HistoryPage() {
                 <CardContent className="space-y-4">
                   <div className="text-xs text-muted-foreground">{new Date(scene.created_at).toLocaleDateString()}</div>
 
-                  {scene.breakdowns.length > 0 && (
+                  {scene.breakdowns && scene.breakdowns.length > 0 && scene.breakdowns[0] && (
                     <div className="space-y-3">
                       <div>
                         <p className="text-xs font-medium text-muted-foreground mb-2">Characters</p>
                         <div className="flex flex-wrap gap-1">
-                          {scene.breakdowns[0].characters.slice(0, 3).map((char, i) => (
-                            <span key={i} className="px-2 py-1 bg-primary/10 text-primary text-xs rounded">
-                              {char}
-                            </span>
-                          ))}
+                          {scene.breakdowns[0]?.characters &&
+                          Array.isArray(scene.breakdowns[0].characters) &&
+                          scene.breakdowns[0].characters.length > 0 ? (
+                            scene.breakdowns[0].characters.slice(0, 3).map((char, i) => (
+                              <span key={i} className="px-2 py-1 bg-primary/10 text-primary text-xs rounded">
+                                {char}
+                              </span>
+                            ))
+                          ) : (
+                            <span className="text-xs text-muted-foreground">No characters found</span>
+                          )}
                         </div>
                       </div>
 
                       <div>
                         <p className="text-xs font-medium text-muted-foreground mb-2">Themes</p>
                         <div className="flex flex-wrap gap-1">
-                          {scene.breakdowns[0].themes.slice(0, 3).map((theme, i) => (
-                            <span
-                              key={i}
-                              className="px-2 py-1 bg-secondary/30 text-secondary-foreground text-xs rounded"
-                            >
-                              {theme}
-                            </span>
-                          ))}
+                          {scene.breakdowns[0]?.themes &&
+                          Array.isArray(scene.breakdowns[0].themes) &&
+                          scene.breakdowns[0].themes.length > 0 ? (
+                            scene.breakdowns[0].themes.slice(0, 3).map((theme, i) => (
+                              <span
+                                key={i}
+                                className="px-2 py-1 bg-secondary/30 text-secondary-foreground text-xs rounded"
+                              >
+                                {theme}
+                              </span>
+                            ))
+                          ) : (
+                            <span className="text-xs text-muted-foreground">No themes found</span>
+                          )}
                         </div>
                       </div>
                     </div>
                   )}
 
                   <div className="flex gap-2 pt-4">
-                    <Button variant="outline" size="sm" onClick={() => router.push("/protected/breakdown")}>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => router.push(`/protected/breakdown?sceneId=${scene.id}`)}
+                    >
                       View
                     </Button>
                     <Button

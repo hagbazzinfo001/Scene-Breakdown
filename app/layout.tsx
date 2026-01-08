@@ -13,7 +13,7 @@ export const metadata: Metadata = {
   title: "SceneBreak AI - AI-Powered Scene Breakdown",
   description:
     "Instantly analyze film and theater scenes with artificial intelligence. Extract characters, themes, locations, and deeper insights.",
-  generator: "v0.app",
+  generator: "Next.js",
   icons: {
     icon: [
       {
